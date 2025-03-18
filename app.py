@@ -171,7 +171,7 @@ def update_pet_stats(pet_id):
 # ✅ Interaction Route (Pet Actions)
 @app.route("/interact", methods=["POST"])
 def interact():
-    pet_id = str(request.form.get("pet_id"))  # ✅ Get pet_id from the form
+    pet_id = (request.form.get("pet_id"))  # ✅ Get pet_id from the form
     action = request.form.get("action")  # ✅ Get action from the form
    
     print(f"🔍 Received pet_id: {pet_id}, action: {action}")  # ✅ Debugging
@@ -186,6 +186,8 @@ def interact():
     conn.close()
 
     if pet is None:
+        conn.close()
+        print("🚨 Pet not found!")
         return jsonify({"error": "Pet not found"}), 404
 
     # Convert database values to safe numbers, replacing None or invalid values
@@ -227,7 +229,7 @@ def safe_int(value, default=5):
 
  # ✅ Return JSON response with updated stats
     return jsonify({
-        "message": "Pet stats updated",
+        ≈"message": "Pet stats updated",
         "hunger": hunger,
         "energy": energy,
         "happiness": happiness,
