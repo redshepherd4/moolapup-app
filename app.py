@@ -171,38 +171,34 @@ def update_pet_stats(pet_id):
 # ✅ Interaction Route (Pet Actions)
 @app.route("/interact", methods=["POST"])
 def interact():
-    pet_id = (request.form.get("pet_id"))  # ✅ Get pet_id from the form
+    pet_id = request.form.get("pet_id")  # ✅ Get pet_id from the form
     action = request.form.get("action")  # ✅ Get action from the form
-   
+     
     print(f"🔍 Received pet_id: {pet_id}, action: {action}")  # ✅ Debugging
-   
-    if not pet_id:
-        return jsonify({"error": "Missing pet_id"}), 400  # ✅ Error handling   
 
+    if not pet_id:
+        return jsonify({"error": "Missing pet_id"}), 400  # ✅ Error handling
+    
     conn = sqlite3.connect("pet.db")
-    c = conn.cursor()
+    c = conn.cursor() 
     c.execute("SELECT * FROM pet WHERE pet_id=?", (pet_id,))
     pet = c.fetchone()
     conn.close()
-
+        
     if pet is None:
-        conn.close()
-        print("🚨 Pet not found!")
         return jsonify({"error": "Pet not found"}), 404
-
+            
     # Convert database values to safe numbers, replacing None or invalid values
-def safe_int(value, default=5):
-    try:
-        return int(value)  # ✅ Ensure value is an integer
-    except (ValueError, TypeError):
-        return default  # ✅ If conversion fails, return default value
-
+    def safe_int(value, default=5):
+        try:
+            return int(value)  # ✅ Ensure value is an integer
+        except (ValueError, TypeError):
+            return default  # ✅ If conversion fails, return default value
+            
     hunger = safe_int(pet[4])
     energy = safe_int(pet[5])
     happiness = safe_int(pet[6])
-    health = safe_int(pet[7])
-
-    action = request.form.get("action")
+    health = safe_int(pet[7])                    
 
     if action == "feed":
         hunger = min(10, hunger + 2)
@@ -214,27 +210,23 @@ def safe_int(value, default=5):
         health = min(10, health + 1)
     elif action == "heal":
         health = min(10, health + 3)
-
- # ✅ Debugging: Check new values before updating
-    print(f"🔄 Updated Stats -> Hunger: {hunger}, Energy: {energy}, Happiness: {happiness}, Health: {health}")
+    
     conn = sqlite3.connect("pet.db")
-
     c = conn.cursor()
     c.execute("UPDATE pet SET hunger=?, energy=?, happiness=?, health=?, last_updated=? WHERE pet_id=?",
               (hunger, energy, happiness, health, dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), pet_id))
     conn.commit()
     conn.close()
-
-    print("✅ Pet stats updated successfully!")
-
- # ✅ Return JSON response with updated stats
+    
+    # ✅ Fix: Return JSON response instead of redirecting
     return jsonify({
         "message": "Pet stats updated",
         "hunger": hunger,
         "energy": energy,
         "happiness": happiness,
         "health": health
-    })
+    }), 200
+
 
 import random
 import string
