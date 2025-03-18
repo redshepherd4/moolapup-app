@@ -171,54 +171,53 @@ def update_pet_stats(pet_id):
 # ✅ Interaction Route (Pet Actions)
 @app.route("/interact", methods=["POST"])
 def interact():
-    pet_id = request.form.get("pet_id")  # ✅ Get pet_id from the form
-    action = request.form.get("action")  # ✅ Get action from the form
-     
-    print(f"🔍 Received pet_id: {pet_id}, action: {action}")  # ✅ Debugging
+    pet_id = request.form.get("pet_id")
+    action = request.form.get("action")
+
+    print(f"🔍 Received pet_id: {pet_id}, action: {action}")  # Debugging
 
     if not pet_id:
-        return jsonify({"error": "Missing pet_id"}), 400  # ✅ Error handling
+        return jsonify({"error": "Missing pet_id"}), 400
     
     conn = sqlite3.connect("pet.db")
-    c = conn.cursor() 
-    c.execute("SELECT * FROM pet WHERE pet_id=?", (pet_id,))
+    c = conn.cursor()
+    c.execute("SELECT hunger, energy, happiness, health FROM pet WHERE pet_id=?", (pet_id,))
     pet = c.fetchone()
     conn.close()
-        
+
     if pet is None:
         return jsonify({"error": "Pet not found"}), 404
-            
-    # Convert database values to safe numbers, replacing None or invalid values
-    def safe_int(value, default=5):
-        try:
-            return int(value)  # ✅ Ensure value is an integer
-        except (ValueError, TypeError):
-            return default  # ✅ If conversion fails, return default value
-            
-    hunger = safe_int(pet[4])
-    energy = safe_int(pet[5])
-    happiness = safe_int(pet[6])
-    health = safe_int(pet[7])                    
 
+    # Extract values safely
+    hunger, energy, happiness, health = map(lambda x: int(x) if x is not None else 5, pet)
+
+    print(f"🔎 BEFORE UPDATE - Hunger: {hunger}, Energy: {energy}, Happiness: {happiness}, Health: {health}")
+
+    # Apply action logic
     if action == "feed":
         hunger = min(10, hunger + 2)
     elif action == "play":
         happiness = min(10, happiness + 2)
-        energy = max(0, energy - 1)
+        energy = max(0, energy - 1)  # Ensure energy doesn't go negative
     elif action == "rest":
         energy = min(10, energy + 2)
         health = min(10, health + 1)
     elif action == "heal":
         health = min(10, health + 3)
-    
+
+    print(f"✅ AFTER UPDATE - Hunger: {hunger}, Energy: {energy}, Happiness: {happiness}, Health: {health}")
+
+    # Update the database
     conn = sqlite3.connect("pet.db")
     c = conn.cursor()
-    c.execute("UPDATE pet SET hunger=?, energy=?, happiness=?, health=?, last_updated=? WHERE pet_id=?",
-              (hunger, energy, happiness, health, dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), pet_id))
+    c.execute("""
+        UPDATE pet 
+        SET hunger=?, energy=?, happiness=?, health=?, last_updated=? 
+        WHERE pet_id=?
+    """, (hunger, energy, happiness, health, dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), pet_id))
     conn.commit()
     conn.close()
-    
-    # ✅ Fix: Return JSON response instead of redirecting
+
     return jsonify({
         "message": "Pet stats updated",
         "hunger": hunger,
@@ -227,7 +226,7 @@ def interact():
         "health": health
     }), 200
 
-
+        
 import random
 import string
 
