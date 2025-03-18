@@ -225,7 +225,14 @@ def safe_int(value, default=5):
 
     print("✅ Pet stats updated successfully!")
 
-    return redirect(url_for("home", pet_id=pet_id))
+ # ✅ Return JSON response with updated stats
+    return jsonify({
+        "message": "Pet stats updated",
+        "hunger": hunger,
+        "energy": energy,
+        "happiness": happiness,
+        "health": health
+    })
 
 import random
 import string
