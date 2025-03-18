@@ -229,7 +229,7 @@ def safe_int(value, default=5):
 
  # ✅ Return JSON response with updated stats
     return jsonify({
-        ≈"message": "Pet stats updated",
+        "message": "Pet stats updated",
         "hunger": hunger,
         "energy": energy,
         "happiness": happiness,
