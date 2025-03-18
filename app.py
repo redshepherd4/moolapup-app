@@ -15,12 +15,12 @@ def init_db():
                     name TEXT DEFAULT 'Moolapup',
                     color TEXT DEFAULT 'brown',
                     accessory TEXT DEFAULT 'none',
-                    hunger INTEGER DEFAULT 5,
-                    energy INTEGER DEFAULT 5,
-                    happiness INTEGER DEFAULT 5,
-                    health INTEGER DEFAULT 5,
+                    hunger INTEGER DEFAULT 5 CHECK(typeof(hunger) = 'integer'),
+                    energy INTEGER DEFAULT 5 CHECK(typeof(energy) = 'integer'),
+                    happiness INTEGER DEFAULT 5 CHECK(typeof(happiness) = 'integer'),
+                    health INTEGER DEFAULT 5 CHECK(typeof(health) = 'integer'),
                     last_updated TEXT
-                )''')
+)''')
     conn.commit()
     conn.close()
 
@@ -160,47 +160,43 @@ def update_pet_stats(pet_id):
 # ✅ Interaction Route (Pet Actions)
 @app.route("/interact", methods=["POST"])
 def interact():
-    action = request.form["action"]
-    print(f"DEBUG: Action received - {action}")  # ✅ Debugging
+    conn = sqlite3.connect("pet.db")
+    c = conn.cursor()
+    c.execute("SELECT * FROM pet WHERE pet_id=?", (pet_id,))
+    pet = c.fetchone()
+    conn.close()
+
+    if pet is None:
+        return jsonify({"error": "Pet not found"}), 404
+
+    # Safeguard against incorrect data types
+    hunger = int(pet[4]) if str(pet[4]).isdigit() else 5
+    energy = int(pet[5]) if str(pet[5]).isdigit() else 5
+    happiness = int(pet[6]) if str(pet[6]).isdigit() else 5
+    health = int(pet[7]) if str(pet[7]).isdigit() else 5
+
+    action = request.form.get("action")
+
+    if action == "feed":
+        hunger = min(10, hunger + 2)
+    elif action == "play":
+        happiness = min(10, happiness + 2)
+        energy = max(0, energy - 1)
+    elif action == "rest":
+        energy = min(10, energy + 2)
+        health = min(10, health + 1)
+    elif action == "heal":
+        health = min(10, health + 3)
 
     conn = sqlite3.connect("pet.db")
     c = conn.cursor()
-    c.execute("SELECT * FROM pet WHERE id=1")
-    pet = c.fetchone()
-
-    if pet:
-        hunger = int(pet[4])
-        energy = int(pet[5])
-        happiness = int(pet[6])
-        health = int(pet[7])
-
-        # ✅ Check if "Let it Rest" is working
-        if action == "feed":
-            new_hunger = max(0, hunger - 3)
-            c.execute("UPDATE pet SET hunger=? WHERE id=1", (new_hunger,))
-            print(f"DEBUG: New Hunger: {new_hunger}")
-
-        elif action == "play":
-            new_happiness = min(10, happiness + 3)
-            c.execute("UPDATE pet SET happiness=? WHERE id=1", (new_happiness,))
-            print(f"DEBUG: New Happiness: {new_happiness}")
-
-        elif action == "rest":  # ✅ Make sure this works!
-            new_energy = min(10, energy + 3)  # Energy should increase
-            c.execute("UPDATE pet SET energy=? WHERE id=1", (new_energy,))
-            print(f"DEBUG: New Energy: {new_energy}")  # ✅ Debugging
-
-        elif action == "medical":
-            new_health = min(10, health + 3)
-            c.execute("UPDATE pet SET health=? WHERE id=1", (new_health,))
-            print(f"DEBUG: New Health: {new_health}")
-
-        conn.commit()
-    else:
-        print("DEBUG: No pet found in database")
-
+    c.execute("UPDATE pet SET hunger=?, energy=?, happiness=?, health=?, last_updated=? WHERE pet_id=?",
+              (hunger, energy, happiness, health, dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), pet_id))
+    conn.commit()
     conn.close()
-    return redirect(url_for("home"))
+
+    return redirect(url_for("home", pet_id=pet_id))
+
 
 # ✅ Save Moolapup Selection
 @app.route("/save_moolapup", methods=["POST"])
