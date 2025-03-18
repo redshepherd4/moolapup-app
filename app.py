@@ -171,7 +171,7 @@ def update_pet_stats(pet_id):
 # ✅ Interaction Route (Pet Actions)
 @app.route("/interact", methods=["POST"])
 def interact():
-    pet_id = str(request.form.get("pet_id")  # ✅ Get pet_id from the form
+    pet_id = str(request.form.get("pet_id"))  # ✅ Get pet_id from the form
     action = request.form.get("action")  # ✅ Get action from the form
    
     print(f"🔍 Received pet_id: {pet_id}, action: {action}")  # ✅ Debugging
