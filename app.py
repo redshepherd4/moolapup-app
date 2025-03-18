@@ -5,14 +5,14 @@ import random
 import string
 import os
 
-# ✅ Define init_db() at the top so it's ready before being called
+# ✅ Define `init_db()` at the top so it's ready before being called
 def init_db():
     conn = sqlite3.connect("pet.db")
     c = conn.cursor()
 
-    # ✅ Debugging: Print when database setup starts
-    print("Initializing database...")
+    print("🔧 Initializing database...")  # ✅ Debugging
 
+    # ✅ Ensure table is created
     c.execute('''CREATE TABLE IF NOT EXISTS pet (
         id INTEGER PRIMARY KEY,
         pet_id TEXT UNIQUE,
@@ -26,27 +26,18 @@ def init_db():
         last_updated TEXT
     )''')
 
-    # ✅ Debugging: Print if the table was created or already exists
-    print("Database table 'pet' checked/created.")
-
-    # Check if a pet entry exists
-    c.execute("SELECT * FROM pet")
-    existing_pet = c.fetchone()
-
-    if not existing_pet:
-        print("No existing pet found. Creating default pet...")
-        c.execute('''INSERT INTO pet (pet_id, name, color, accessory, hunger, energy, happiness, health, last_updated)
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)''',
-                  ('default', 'Moolapup', 'brown', 'none', 5, 5, 5, 5, dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+    print("✅ Database table 'pet' checked/created.")  # ✅ Debugging
 
     conn.commit()
     conn.close()
 
-    # ✅ Debugging: Confirm database setup completed
-    print("Database initialization complete.")
+# ✅ Ensure database is created BEFORE Flask starts
+init_db()
 
-# ✅ Initialize Flask app
 app = Flask(__name__)
+
+# ✅ Debugging: Ensure app starts properly
+print("🚀 Flask app is running!"
 
 if __name__ == "__main__":
     init_db()  # ✅ Moves this after the function definition
