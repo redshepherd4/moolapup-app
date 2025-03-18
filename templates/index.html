@@ -1,0 +1,486 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>      
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Virtual Pet - Moolandia</title>
+<style>
+/* 🌿 Seasonal Window Background */
+.window-background {
+    position: absolute;   
+    top: 21%; /* Adjust so it aligns with the window */
+    left: 40%; /* Fine-tune so it's centered in the window */
+    width: 35%; /* Resize to fit within the window */
+    height: 35%; /* Adjust height to match the window size */
+    background-image: url("{{ url_for('static', filename=background) }}");
+    background-size: cover;
+    background-position: center;
+    z-index: -5; /* ✅ Moves it behind the barn and inside the window */
+            
+}
+.barn-background {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100vw;  /* Ensures it spans the full viewport width */
+    height: 100vh;
+    object-fit: cover; /* Prevents squishing/distortion */
+    z-index: 0;
+}
+
+    /* 🌧️ Weather Animation Canvas */
+    #weatherCanvas {
+        position: absolute;
+        top: 20%;
+        left: 30%;
+        width: 50%;
+        height: 40%;
+        z-index:-1; /* Keeps weather above the background */
+        pointer-events: none;
+    }
+            
+        
+        .title-image {
+            position: absolute;
+            top: 2%;   
+            left: 50%;
+            transform: translateX(-50%);
+            width: 500px;
+        }
+
+@keyframes breathe {
+    0% { transform: translateY(0px) scale(1); }
+    50% { transform: translateY(-4px) scale(1.02); }
+    100% { transform: translateY(0px) scale(1); }
+}
+
+/* 🐮 Fix Pet Container */
+.pet-container { 
+    position: absolute !important;
+    bottom: 35% !important;  /* Moves it down slightly */
+    left: 50% !important;
+    transform: translateX(-50%)
+    width: 200px !important;  /* Smaller size */
+    max-width: 200px !important;
+    height: 200px !important;
+    max-height: 200px !important;  /* Prevents oversized scaling */
+    overflow: visible !important; 
+    z-index: 6 !important;
+    animation: breathe 3s infinite ease-in-out;!important;  /* ✅ This makes Moolapup breathe */
+
+}
+
+/* 🐮 Fix Pet Image */
+/* ✅ Ensures all Moolapup images are properly positioned */
+#moolapup-normal, #moolapup-blink, #moolapup-flick {
+    position: absolute !important;
+    width: 300px !important;
+    height: auto !important;
+    display: block !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    z-index: 10 !important;
+    transition: opacity 0.2s ease-in-out; /* ✅ Smooth transition */
+}
+
+/* ✅ Default state: Only Normal Moolapup is visible */
+#moolapup-normal {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* ✅ Hide blink and flick by default */
+#moolapup-blink, #moolapup-flick {
+    opacity: 0;
+    visibility: hidden;
+}
+
+/* ✅ Blinking Effect */
+.blinking {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.blink-visible {
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+/* ✅ Flicking Effect */
+.flicking {
+    opacity: 0;
+    visibility: hidden;
+}
+.flick-visible {
+    opacity: 1 !important;
+    visibility: visible !important;
+    display: block !important;
+}
+         
+        /* 📊 Stats & Buttons Layout */
+        .game-container {
+            display: flex;
+            justify-content: space-between;
+            width: 80%;
+            max-width: 600px;
+            margin-top: 20px;
+        }
+        
+/* 📜 Stats - Keeps in Place */
+.stats-container {
+    position: absolute;
+    bottom: 20%; /* Ensures it doesn't overlap with Moolapup */
+    left: 20%;
+    transform: translateX(-50%);
+    width: 150px; /* Adjust size */
+    height: 250px; /* Adjust this value */
+    padding: 30px; /* Adds space inside */  
+    z-index: 5; /* Below Moolapup but above background */
+}
+
+  .stats-sign {
+    width:260px; /* Increases sign size */
+    max-width: 270px;
+    display: block;
+    height: 300px;
+    margin: 0 auto; /* Centers the sign */
+}
+          
+            
+        .stats-text {
+            position: absolute;
+            top: 22%;
+            left: 50%;    
+            font-size: 16px;    
+            color: black;
+            font-weight: bold;
+            font-family: American Typewriter;
+        }
+
+/* 🎮 Buttons - Fix Positioning */
+.buttons-container {
+    position: absolute !important;
+    bottom: 5% !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    display: flex !important;
+    gap: 15px !important; /* Spaces buttons out */
+    z-index: 14 !important;         
+        }
+        
+        button {
+            padding: 12px 18px;
+            font-size: 18px;
+            background-color: #ffcc00;          
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+       	width: 150px; /* ✅ Prevents shrinking */
+    text-align: center;
+        }   
+        
+        button:hover {  
+            background-color: #ffaa00;
+        }   
+        
+        /* 🔥 Lantern & Glow Styling */
+        .lantern-container {
+            position: absolute;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+         
+        /* Lantern Image */
+        .lantern-img {
+            width: 140px;   
+            height: auto;
+            position: relative;
+            z-index: 2;
+        }
+            
+        /* Lantern Glow */
+        .lantern-glow {
+            position: absolute;
+            width: 180px;
+            height: 180px;
+            background: radial-gradient(circle, rgba(255, 204, 0, 0.7) 20%,
+                                           rgba(255, 204, 0, 0.3) 50%,                                         rgba(255, 204, 0, 0.1) 75%,
+                                           rgba(255, 204, 0, 0) 100%);
+            border-radius: 50%;
+            opacity: 0.9;
+            animation: flicker 1.8s infinite ease-in-out alternate;
+            pointer-events: none;
+            filter: blur(12px);
+            z-index: 1;
+        }
+        
+        /* 🔹 Wall Lantern (Top-Left) */
+        .wall-lantern-container {
+            position: absolute;
+            top: 250px;
+            left: 85px;
+            width: 150px;
+            height: auto;
+            z-index: 2;
+        }
+            
+        /* 🔹 Floor Lantern (Bottom-Right) */
+        .floor-lantern-container {
+            position: absolute;
+            bottom: 55px;
+            right: 65px;
+            width: 170px; 
+            height: auto;
+            z-index: 2;
+        }
+            
+        /* 🌬️ Breathing Animation */
+        @keyframes breathe {         
+            0% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(-10px); }
+            100% { transform: translateX(-50%) translateY(0); }
+        }
+            
+        /* ✨ Flickering Effect */
+        @keyframes flicker {   
+            0% { opacity: 0.5; transform: scale(1); filter: blur(6px); }
+            50% { opacity: 0.9; transform: scale(1.1); filter: blur(10px); }
+            100% { opacity: 0.7; transform: scale(1); filter: blur(8px); }
+        }
+
+    </style>
+</head>
+            
+<body>
+<!-- 🌿 Seasonal Window Background -->
+<div class="window-background"></div>
+           
+<!-- 🏡 Cozy Barn with Transparent Window -->
+<img src="{{ url_for('static', filename='background.png') }}" alt="Cozy Barn" class="barn-background"> 
+   
+    <!-- Weather Animation Canvas -->
+    <canvas id="weatherCanvas"></canvas>
+        
+    <!-- 🔥 Left Wall Lantern -->
+    <div class="wall-lantern-container">
+        <div class="lantern-glow"></div>
+        <img src="{{ url_for('static', filename='walllantern.png') }}" alt="Wall Lantern" class="lantern-img">
+    </div>
+            
+    <!-- 🔥 Floor Lantern -->
+    <div class="floor-lantern-container">
+        <div class="lantern-glow"></div>
+        <img src="{{ url_for('static', filename='lantern.png') }}" alt="Floor Lantern" class="lantern-img">
+    </div>          
+    <!-- 🔹 Title Image -->
+    <img src="{{ url_for('static', filename='title.png') }}" alt="Virtual Pet Title" class="title-image">
+
+<!-- 🐮 Pet Container (Moved OUT of game-container) -->
+
+<div class="pet-container">
+    {% if pet_image %}
+        <!-- Normal Moolapup Image -->
+        <img id="moolapup-normal" src="{{ url_for('static', filename=pet_image) }}"
+             alt="Moolapup Normal" class="pet">
+            
+        <!-- Blinking Moolapup Image -->
+        <img id="moolapup-blink" src="{{ url_for('static', filename=pet_image.replace('.png', '-blink.png')) }}"
+             alt="Moolapup Blinking" class="pet blink-hidden" style="display: none;">
+
+        <!-- Ear Flicking Moolapup Image -->
+        <img id="moolapup-flick" src="{{ url_for('static', filename=pet_image.replace('.png', '-flick.png')) }}"
+             alt="Moolapup Flicking" class="pet flick-hidden" style="display: none;">
+    {% else %}  
+        <p style="color: red;">Error: Pet image not found!</p> <!-- Debugging -->
+    {% endif %}
+</div>
+
+<!-- 🛠️ Game Interface (Stats & Buttons) -->
+<div class="game-container">
+    <!-- 📜 Stats Sign with Pet Stats -->
+    <div class="stats-container">
+        <img src="{{ url_for('static', filename='stats-sign.png') }}" alt="Stats Sign" class="stats-sign">
+        <div class="stats-text" id="stats">
+            <p>Hunger: <span id="hunger">{{ pet[4] }}</span>/10</p>
+            <p>Energy: <span id="energy">{{ pet[5] }}</span>/10</p>
+            <p>Happiness: <span id="happiness">{{ pet[6] }}</span>/10</p>
+            <p>Health: <span id="health">{{ pet[7] }}</span>/10</p>
+        </div>
+    </div>
+
+    <!-- 🎮 Buttons for Interactions -->
+    <div class="buttons-container">
+        <form action="/interact" method="post">
+            <button type="submit" name="action" value="feed">Feed</button>
+            <button type="submit" name="action" value="play">Play</button>
+            <button type="submit" name="action" value="rest">Let it Rest</button>
+            <button type="submit" name="action" value="medical">Medical Care</button>
+        </form>
+    </div>
+</div>
+
+<script>
+
+function blinkMoolapup() {
+    console.log("Blink function is running!");
+
+    let normal = document.getElementById("moolapup-normal");
+    let blink = document.getElementById("moolapup-blink");
+    let flick = document.getElementById("moolapup-flick");
+
+    if (!normal || !blink) {
+        console.error("Blink images not found!");
+        return;
+    }
+
+    // ✅ If flicking, don't blink
+    if (flick.classList.contains("flick-visible")) {
+        console.log("Skipping blink - flick is active.");
+        return;
+    }
+
+    console.log("Switching to blink image...");
+    normal.classList.add("blinking");
+    blink.classList.add("blink-visible");
+
+    setTimeout(() => {
+        console.log("Switching back to normal image...");
+        normal.classList.remove("blinking");
+        blink.classList.remove("blink-visible");
+    }, 300);
+}
+
+// 🎯 Prevent multiple intervals from stacking
+let blinkInterval;
+                
+function startBlinking() {
+    console.log("Blinking interval started!");
+    if (blinkInterval) clearInterval(blinkInterval); // Clear any existing interval
+
+    // ✅ Ensure blinking continues at random intervals (between 4s - 7s)
+    blinkInterval = setInterval(() => {
+        blinkMoolapup();
+    }, Math.floor(Math.random() * 4000) + 3000);
+}
+        
+document.addEventListener("DOMContentLoaded", startBlinking);
+
+function startEarFlicking() {
+    console.log("Ear Flicking interval started!");
+    setInterval(flickEarMoolapup, Math.floor(Math.random() * 10000) + 5000);
+}
+
+// Call the function to start the flicking interval
+startEarFlicking();
+
+function flickEarMoolapup() {
+    console.log("Flick function is running!");
+
+    let normal = document.getElementById("moolapup-normal");
+    let flick = document.getElementById("moolapup-flick");
+
+    if (!normal || !flick) {
+        console.error("Flick images not found!");
+        return;
+    }
+
+    console.log("Switching to flick image...");
+    normal.classList.add("flicking");
+    flick.classList.add("flick-visible");
+
+    setTimeout(() => {
+        console.log("Switching back to normal image...");
+        normal.classList.remove("flicking");
+        flick.classList.remove("flick-visible");
+    }, 500); // Adjust flick duration
+}
+
+// ✅ Start Flicking when the page loads
+document.addEventListener("DOMContentLoaded", function() {
+    startEarFlicking();
+});
+
+</script>
+</body>
+</html>
+
+         
+}
+                
+// Call updateStats every 2 seconds
+setInterval(updateStats, 2000);
+        
+<script>  
+    // 🌦️ JavaScript Weather Animation
+    const canvas = document.getElementById("weatherCanvas");
+    const ctx = canvas.getContext("2d");
+    
+    canvas.width = window.innerWidth * 0.4;
+    canvas.height = window.innerHeight * 0.4;
+    
+    let weatherEffect = "{{ weather_effect }}";  // Get effect from Flask
+        
+    function createParticles(effect) {
+        let particles = [];
+        for (let i = 0; i < 50; i++) {
+            particles.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                radius: Math.random() * 3 + 1,
+                speed: Math.random() * 2 + 1,
+                effect: effect
+            });
+        }
+        return particles;
+    }
+            
+    let particles = createParticles(weatherEffect);        
+    function drawParticles() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+        particles.forEach(p => {   
+            ctx.beginPath();   
+            ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+
+            // 🟢 Set colors based on effect
+            if (p.effect === "snow") {
+                ctx.fillStyle = "white";
+            } else if (p.effect === "rain") {
+                ctx.fillStyle = "rgba(0, 100, 255, 0.6)";
+            } else if (p.effect === "leaves") {
+                ctx.fillStyle = "rgba(165, 42, 42, 0.8)";
+            } else if (p.effect === "wind") {
+                ctx.fillStyle = "rgba(200, 200, 200, 0.3)";
+            }
+        
+            ctx.fill();
+            
+            // 🟢 Move particles based on effect
+            if (p.effect === "snow") {
+                p.y += p.speed * 0.5;
+            } else if (p.effect === "rain") {
+                p.y += p.speed * 2;
+            } else if (p.effect === "leaves") {
+                p.y += p.speed * 0.7;
+                p.x += Math.sin(p.y / 50) * 2;
+            } else if (p.effect === "wind") {
+                p.x += p.speed * 1.5;
+                if (p.x > canvas.width) p.x = 0;             }
+    
+            // Reset particles when they go off-screen   
+            if (p.y > canvas.height) p.y = 0;
+        });
+            
+        requestAnimationFrame(drawParticles);
+    }
+            
+    drawParticles();
+</script>
+
+</body>
+</html>
+
+            

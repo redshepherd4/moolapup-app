@@ -1,0 +1,81 @@
+
+from flask import Flask, render_template, request, redirect, url_for import sqlite3 import datetime 
+nano app.py app = Flask(__name__)
+
+# Database setup def init_db(): cd ~/Desktop/virtual-pet conn = sqlite3.connect("pet.db")
+    c = conn.cursor() c.execute('''CREATE TABLE IF NOT EXISTS pet ( cd ~/Desktop/virtual-pet id 
+INTEGER PRIMARY KEY,
+                    name TEXT, hunger INTEGER, energy INTEGER, happiness INTEGER, health INTEGER, 
+                    last_updated TEXT
+python app.py )''')
+    c.execute("SELECT * FROM pet WHERE id=1") if not c.fetchone():
+        c.execute("INSERT INTO pet (id, name, hunger, energy, happiness, health, last_updated) VALUES (1, 'Moolapup', 5, 5, 5, 5, ?)", 
+                  (datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),))
+    conn.commit()
+    conn.close()
+
+# Function to update pet stats daily
+def update_pet_stats():
+    conn = sqlite3.connect("pet.db")
+    c = conn.cursor()
+    c.execute("SELECT * FROM pet WHERE id=1")
+    pet = c.fetchone()
+
+    if pet:
+        last_updated = datetime.datetime.strptime(str(pet[6]), "%Y-%m-%d %H:%M:%S")
+        now = datetime.datetime.now()
+        time_diff = (now - last_updated).days
+
+        if time_diff > 0:
+            new_hunger = min(10, pet[2] + time_diff)  # Hunger increases
+            new_energy = max(0, pet[3] - time_diff)  # Energy decreases
+            new_happiness = max(0, pet[4] - time_diff)  # Happiness decreases
+            new_health = max(0, pet[5] - (time_diff // 2))  # Health decreases slower
+            
+            c.execute("UPDATE pet SET hunger=?, energy=?, happiness=?, health=?, last_updated=? WHERE id=1",
+                      (new_hunger, new_energy, new_happiness, new_health, now.strftime("%Y-%m-%d %H:%M:%S")))
+            conn.commit()
+    conn.close()
+
+@app.route("/")
+def home():
+    update_pet_stats()  # Ensure stats update daily
+    conn = sqlite3.connect("pet.db")
+    c = conn.cursor()
+    c.execute("SELECT * FROM pet WHERE id=1")
+    pet = c.fetchone()
+    conn.close()
+    
+    return render_template("index.html", pet=pet)
+
+@app.route("/interact", methods=["POST"])
+def interact():
+    action = request.form["action"]
+    conn = sqlite3.connect("pet.db")
+    c = conn.cursor()
+    
+    c.execute("SELECT * FROM pet WHERE id=1")
+    pet = c.fetchone()
+
+    if action == "feed":
+        new_hunger = max(0, pet[2] - 3)
+        c.execute("UPDATE pet SET hunger=? WHERE id=1", (new_hunger,))
+    elif action == "play":
+        new_happiness = min(10, pet[4] + 3)
+        c.execute("UPDATE pet SET happiness=? WHERE id=1", (new_happiness,))
+    elif action == "rest":
+        new_energy = min(10, pet[3] + 3)
+        c.execute("UPDATE pet SET energy=? WHERE id=1", (new_energy,))
+    elif action == "medical":
+        new_health = min(10, pet[5] + 3)
+        c.execute("UPDATE pet SET health=? WHERE id=1", (new_health,))
+    
+    conn.commit()
+    conn.close()
+    
+    return redirect(url_for("home"))
+
+if __name__ == "__main__":
+    init_db()
+    app.run(debug=True)
+

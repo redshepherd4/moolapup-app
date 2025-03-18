@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Choose Your Moolapup</title>
+    <style>
+        body {
+            background-image: url("{{ url_for('static', filename='background-selection.png') }}");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-family: Arial, sans-serif;
+        }
+        .gallery {
+            display: flex;
+            gap: 40px;
+            justify-content: center;
+            margin-top: 50px;
+        }
+        .portrait {
+            width: 200px;
+            cursor: pointer;
+            transition: transform 0.2s, filter 0.2s;
+        }
+        .portrait:hover {
+            transform: scale(1.1);
+            filter: brightness(1.2);
+        }
+        h1 {
+            background: rgba(255, 255, 255, 0.8);
+            padding: 10px;
+            border-radius: 10px;
+        }
+        .selected {
+            border: 5px solid gold;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Choose Your Moolapup</h1>
+    <p>Click on a portrait to select your pet:</p>
+
+    <div class="gallery">
+        <form id="moolapupForm" action="/save_moolapup" method="post">
+            <input type="hidden" name="name" value="Moolapup">
+            <input type="hidden" id="selectedColor" name="color" value="">
+
+	    	<img src="{{ url_for('static', filename='portrait-brown.png') }}" alt="Brown Moolapup" class="portrait" onclick="selectMoolapup('brown', this)">
+		<img src="{{ url_for('static', filename='portrait-white.png') }}" alt="White Moolapup" class="portrait" onclick="selectMoolapup('white', this)">
+		<img src="{{ url_for('static', filename='portrait-black.png') }}" alt="Black Moolapup" class="portrait" onclick="selectMoolapup('black', this)">
+		<img src="{{ url_for('static', filename='portrait-spotted.png') }}" alt="Spotted Moolapup" class="portrait" onclick="selectMoolapup('spotted', this)">
+
+            <br><br>
+	<button type="button" id="confirmBtn">Confirm Selection</button>
+
+        </form>
+    </div>
+
+<script>
+    function selectMoolapup(color, element) {
+        document.getElementById('selectedColor').value = color;
+        
+        // Remove selection border from all portraits
+        let portraits = document.querySelectorAll('.portrait');
+        portraits.forEach(img => img.classList.remove('selected'));
+
+        // Highlight the selected portrait
+        element.classList.add('selected');
+    }
+
+    document.getElementById("confirmBtn").addEventListener("click", function() {
+        let selectedColor = document.getElementById('selectedColor').value;
+        if (selectedColor === "") {
+            alert("Please select a Moolapup before confirming!");
+        } else {
+            document.getElementById('moolapupForm').submit();
+        }
+    });
+</script>
+
+
+
+
+</body>
+</html>
+
+
+
+
+
