@@ -311,16 +311,19 @@
         </div>
     </div>
 
-    <!-- 🎮 Buttons for Interactions -->
-    <div class="buttons-container">
-        <form action="/interact" method="post">
-            <button type="submit" name="action" value="feed">Feed</button>
-            <button type="submit" name="action" value="play">Play</button>
-            <button type="submit" name="action" value="rest">Let it Rest</button>
-            <button type="submit" name="action" value="medical">Medical Care</button>
-        </form>
-    </div>
+<!-- 🎮 Buttons for Interactions -->
+<div class="buttons-container">
+    <form action="/interact" method="post">
+        <!-- ✅ Hidden field to pass pet_id -->
+        <input type="hidden" name="pet_id" value="{{ pet[1] }}">
+        
+        <button type="submit" name="action" value="feed">Feed</button>
+        <button type="submit" name="action" value="play">Play</button>
+        <button type="submit" name="action" value="rest">Let it Rest</button>
+        <button type="submit" name="action" value="medical">Medical Care</button>
+    </form>
 </div>
+
 
 <script>
 

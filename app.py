@@ -171,6 +171,14 @@ def update_pet_stats(pet_id):
 # ✅ Interaction Route (Pet Actions)
 @app.route("/interact", methods=["POST"])
 def interact():
+    pet_id = request.form.get("pet_id")  # ✅ Get pet_id from the form
+    action = request.form.get("action")  # ✅ Get action from the form
+   
+    print(f"🔍 Received pet_id: {pet_id}, action: {action}")  # ✅ Debugging
+   
+    if not pet_id:
+        return jsonify({"error": "Missing pet_id"}), 400  # ✅ Error handling   
+
     conn = sqlite3.connect("pet.db")
     c = conn.cursor()
     c.execute("SELECT * FROM pet WHERE pet_id=?", (pet_id,))
