@@ -3,6 +3,10 @@ import sqlite3
 import datetime as dt  # ✅ Forces Python to use built-in datetime
 import random
 import string
+import os
+
+if not os.path.exists('pet.db'):
+    init_db()
 
 def generate_pet_id():
     return ''.join(random.choices(string.ascii_lowercase + string.digits, k=6))
