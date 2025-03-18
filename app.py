@@ -5,6 +5,25 @@ import random
 import string
 import os
 
+# ✅ Define init_db() at the top so it's ready before being called
+def init_db():
+    conn = sqlite3.connect("pet.db")
+    c = conn.cursor()
+    c.execute('''CREATE TABLE IF NOT EXISTS pet (
+                    id INTEGER PRIMARY KEY,
+                    pet_id TEXT UNIQUE,
+                    name TEXT DEFAULT 'Moolapup',
+                    color TEXT DEFAULT 'brown',
+                    accessory TEXT DEFAULT 'none',
+                    hunger INTEGER DEFAULT 5,
+                    energy INTEGER DEFAULT 5,
+                    happiness INTEGER DEFAULT 5,
+                    health INTEGER DEFAULT 5,
+                    last_updated TEXT
+                )''')
+    conn.commit()
+    conn.close()
+
 if not os.path.exists('pet.db'):
     init_db()
 
@@ -111,26 +130,6 @@ def home(pet_id):
      background=background,
      weather_effect=weather_effect
     )
-
-# ✅ Database setup
-def init_db():
-    conn = sqlite3.connect("pet.db")
-    c = conn.cursor()
-    c.execute('''CREATE TABLE IF NOT EXISTS pet (
-                    id INTEGER PRIMARY KEY,
-                    pet_id TEXT UNIQUE,
-                    name TEXT DEFAULT 'Moolapup',
-                    color TEXT DEFAULT 'brown',
-                    accessory TEXT DEFAULT 'none',
-                    hunger INTEGER DEFAULT 5,
-                    energy INTEGER DEFAULT 5,
-                    happiness INTEGER DEFAULT 5,
-                    health INTEGER DEFAULT 5,
-                    last_updated TEXT
-                )''')
-    conn.commit()
-    conn.close()
-
 
 # ✅ Function to update pet stats every 2 hours
 def update_pet_stats(pet_id):
