@@ -22,20 +22,24 @@ def init_db():
         last_updated TEXT
     )''')
 
-    # Ensure at least one entry exists with default values
+    # ✅ Ensure at least one entry exists with default values
     c.execute("SELECT * FROM pet")
     existing_pet = c.fetchone()
 
     if not existing_pet:
-        c.execute("INSERT INTO pet (pet_id, name, color, accessory, hunger, energy, happiness, health, last_updated) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", 
+        c.execute('''INSERT INTO pet (pet_id, name, color, accessory, hunger, energy, happiness, health, last_updated)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)''',
                   ('default', 'Moolapup', 'brown', 'none', 5, 5, 5, 5, dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
-    
+
     conn.commit()
     conn.close()
 
-from flask import Flask
-
+# ✅ Initialize Flask app
 app = Flask(__name__)
+
+if __name__ == "__main__":
+    init_db()  # ✅ Moves this after the function definition
+    app.run(host="0.0.0.0", port=10000)  # Required for Render
 
 # ✅ Function to get pet stats as JSON
 @app.route("/get_stats")
