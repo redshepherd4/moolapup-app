@@ -213,12 +213,17 @@ def safe_int(value, default=5):
     elif action == "heal":
         health = min(10, health + 3)
 
+ # ✅ Debugging: Check new values before updating
+    print(f"🔄 Updated Stats -> Hunger: {hunger}, Energy: {energy}, Happiness: {happiness}, Health: {health}")
     conn = sqlite3.connect("pet.db")
+
     c = conn.cursor()
     c.execute("UPDATE pet SET hunger=?, energy=?, happiness=?, health=?, last_updated=? WHERE pet_id=?",
               (hunger, energy, happiness, health, dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), pet_id))
     conn.commit()
     conn.close()
+
+    print("✅ Pet stats updated successfully!")
 
     return redirect(url_for("home", pet_id=pet_id))
 
