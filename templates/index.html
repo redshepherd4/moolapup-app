@@ -313,14 +313,12 @@
 
 <!-- 🎮 Buttons for Interactions -->
 <div class="buttons-container">
-    <form action="/interact" method="post">
-        <!-- ✅ Hidden field to pass pet_id -->
-        <input type="hidden" name="pet_id" value="{{ pet[1] }}">
-        
-        <button type="submit" name="action" value="feed">Feed</button>
-        <button type="submit" name="action" value="play">Play</button>
-        <button type="submit" name="action" value="rest">Let it Rest</button>
-        <button type="submit" name="action" value="medical">Medical Care</button>
+    <form id="interaction-form">
+        <input type="hidden" name="pet_id" value="{{ pet[1] }}"> <!-- ✅ Hidden pet_id -->
+        <button type="button" onclick="sendAction('feed')">Feed</button>
+        <button type="button" onclick="sendAction('play')">Play</button>
+        <button type="button" onclick="sendAction('rest')">Let it Rest</button>
+        <button type="button" onclick="sendAction('heal')">Medical Care</button>
     </form>
 </div>
 
@@ -481,6 +479,31 @@ setInterval(updateStats, 2000);
     }
             
     drawParticles();
+function sendAction(action) {
+    let petId = document.querySelector('input[name="pet_id"]').value;
+
+    fetch("/interact", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: `pet_id=${petId}&action=${action}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.message === "Pet stats updated") {
+            // ✅ Update the stats UI instantly
+            document.getElementById("hunger").textContent = data.hunger;
+            document.getElementById("energy").textContent = data.energy;
+            document.getElementById("happiness").textContent = data.happiness;
+            document.getElementById("health").textContent = data.health;
+        } else {
+            alert("Error updating pet stats");
+        }
+    })
+    .catch(error => console.error("Error:", error));
+}
+
 </script>
 
 </body>
