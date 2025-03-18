@@ -37,7 +37,7 @@ init_db()
 app = Flask(__name__)
 
 # ✅ Debugging: Ensure app starts properly
-print("🚀 Flask app is running!"
+print("🚀 Flask app is running!")
 
 if __name__ == "__main__":
     init_db()  # ✅ Moves this after the function definition
