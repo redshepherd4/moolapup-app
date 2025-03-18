@@ -10,25 +10,30 @@ def init_db():
     conn = sqlite3.connect("pet.db")
     c = conn.cursor()
     c.execute('''CREATE TABLE IF NOT EXISTS pet (
-                    id INTEGER PRIMARY KEY,
-                    pet_id TEXT UNIQUE,
-                    name TEXT DEFAULT 'Moolapup',
-                    color TEXT DEFAULT 'brown',
-                    accessory TEXT DEFAULT 'none',
-                    hunger INTEGER DEFAULT 5 CHECK(typeof(hunger) = 'integer'),
-                    energy INTEGER DEFAULT 5 CHECK(typeof(energy) = 'integer'),
-                    happiness INTEGER DEFAULT 5 CHECK(typeof(happiness) = 'integer'),
-                    health INTEGER DEFAULT 5 CHECK(typeof(health) = 'integer'),
-                    last_updated TEXT
-)''')
+        id INTEGER PRIMARY KEY,
+        pet_id TEXT UNIQUE,
+        name TEXT DEFAULT 'Moolapup',
+        color TEXT DEFAULT 'brown',
+        accessory TEXT DEFAULT 'none',
+        hunger INTEGER DEFAULT 5,
+        energy INTEGER DEFAULT 5,
+        happiness INTEGER DEFAULT 5,
+        health INTEGER DEFAULT 5,
+        last_updated TEXT
+    )''')
+
+    # Ensure at least one entry exists with default values
+    c.execute("SELECT * FROM pet")
+    existing_pet = c.fetchone()
+
+    if not existing_pet:
+        c.execute("INSERT INTO pet (pet_id, name, color, accessory, hunger, energy, happiness, health, last_updated) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", 
+                  ('default', 'Moolapup', 'brown', 'none', 5, 5, 5, 5, dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+    
     conn.commit()
     conn.close()
 
-if not os.path.exists('pet.db'):
-    init_db()
-
-def generate_pet_id():
-    return ''.join(random.choices(string.ascii_lowercase + string.digits, k=6))
+from flask import Flask
 
 app = Flask(__name__)
 
@@ -169,11 +174,14 @@ def interact():
     if pet is None:
         return jsonify({"error": "Pet not found"}), 404
 
-    # Safeguard against incorrect data types
-    hunger = int(pet[4]) if str(pet[4]).isdigit() else 5
-    energy = int(pet[5]) if str(pet[5]).isdigit() else 5
-    happiness = int(pet[6]) if str(pet[6]).isdigit() else 5
-    health = int(pet[7]) if str(pet[7]).isdigit() else 5
+    # Convert database values to safe numbers, replacing None or invalid values
+    def safe_int(value, default=5):
+        return int(value) if value and str(value).isdigit() else default
+
+    hunger = safe_int(pet[4])
+    energy = safe_int(pet[5])
+    happiness = safe_int(pet[6])
+    health = safe_int(pet[7])
 
     action = request.form.get("action")
 
@@ -196,6 +204,7 @@ def interact():
     conn.close()
 
     return redirect(url_for("home", pet_id=pet_id))
+
 
 
 # ✅ Save Moolapup Selection
