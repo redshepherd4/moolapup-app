@@ -111,7 +111,7 @@ def home(pet_id):
     current_hour = dt.datetime.now().hour
     time_of_day = "morning" if 6 <= current_hour < 11 else "afternoon" if 11 <= current_hour < 18 else "night"
 
-    return render_template("game.html", pet=pet, pet_image=pet_image, season=season, weather_options=weather_options, time_of_day=time_of_day)
+    return render_template("index.html", pet=pet, pet_image=pet_image, season=season, weather_options=weather_options, time_of_day=time_of_day)
 
    
 
