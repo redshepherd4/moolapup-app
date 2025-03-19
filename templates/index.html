@@ -256,7 +256,17 @@
             
 <body>
 <!-- 🌿 Seasonal Window Background -->
-<div class="window-background"></div>
+<div class="window-background" 
+     style="background-image: url('{{ url_for('static', filename=season + "-" + time_of_day + ".png") }}');">
+</div>
+
+
+<!-- 🌦️ Weather Info -->
+<div id="weather-container">
+    <p>🌎 Season: {{ season }}</p>
+    <p>⛅ Weather: {{ weather_options | random }}</p>
+    <p>🌅 Time of Day: {{ time_of_day }}</p>
+</div>
            
 <!-- 🏡 Cozy Barn with Transparent Window -->
 <img src="{{ url_for('static', filename='background.png') }}" alt="Cozy Barn" class="barn-background"> 
@@ -477,8 +487,9 @@ setInterval(updateStats, 2000);
             
         requestAnimationFrame(drawParticles);
     }
-            
-    drawParticles();
+
+drawParticles();
+
 function sendAction(action) {
     let petId = document.querySelector('input[name="pet_id"]').value;
 
@@ -501,8 +512,9 @@ function sendAction(action) {
             alert("Error updating pet stats");
         }
     })
-    .catch(error => console.error("Error:", error));
+    .catch(error => console.error("Fetch error:", error)); // ✅ Added error handling
 }
+
 
 </script>
 

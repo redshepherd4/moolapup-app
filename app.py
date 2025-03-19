@@ -97,21 +97,42 @@ def home(pet_id):
         pet_image = f"moolapup-{color}-sad.png"
     elif health <= 2:
         pet_image = f"moolapup-{color}-sick.png"
+# Determine season and time of day  
+month = dt.datetime.now().month
+season_options = {
+    (3, 4, 5): ("spring", ["rain", "clear", "wind"]),
+    (6, 7, 8): ("summer", ["clear", "wind", "storm"]),
+    (9, 10, 11): ("fall", ["leaves", "wind", "clear"]),
+    (12, 1, 2): ("winter", ["snow", "clear", "frost"]),
+}
 
-    # Determine season and time of day
-    month = dt.datetime.now().month
-    season_options = {
-        (3, 4, 5): ("spring", ["rain", "clear", "wind"]),
-        (6, 7, 8): ("summer", ["clear", "wind", "storm"]),
-        (9, 10, 11): ("fall", ["leaves", "wind", "clear"]),
-        (12, 1, 2): ("winter", ["snow", "clear", "frost"]),
-    }
-    season, weather_options = next((s for m, s in season_options.items() if month in m), ("spring", ["clear"]))
+# Loop to determine season and weather options
+for months, (s, w) in season_options.items():
+    if month in months:
+        season = s
+        weather_options = w
+        break
+else:
+    season = "spring"
+    weather_options = ["clear"]
 
-    current_hour = dt.datetime.now().hour
-    time_of_day = "morning" if 6 <= current_hour < 11 else "afternoon" if 11 <= current_hour < 18 else "night"
+# Determine time of day (fix "afternoon" → "day")
+current_hour = dt.datetime.now().hour
+if 6 <= current_hour < 11:
+    time_of_day = "morning"
+elif 11 <= current_hour < 18:
+    time_of_day = "day"  # ✅ Fix: Matches "summer-day.png"
+else:
+    time_of_day = "night"
 
-    return render_template("index.html", pet=pet, pet_image=pet_image, season=season, weather_options=weather_options, time_of_day=time_of_day)
+# Debugging output to confirm
+print(f"DEBUG: Season - {season}, Time of Day - {time_of_day}")
+print(f"DEBUG: Weather Options - {weather_options}")
+
+# Send values to template
+return render_template("index.html", pet=pet, pet_image=pet_image, 
+                       season=season, time_of_day=time_of_day, weather_options=weather_options)
+
 
    
 
