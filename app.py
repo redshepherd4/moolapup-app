@@ -113,7 +113,7 @@ def home(pet_id):
 
     return render_template("game.html", pet=pet, pet_image=pet_image, season=season, weather_options=weather_options, time_of_day=time_of_day)
 
-    )
+   
 
     # ✅ Debugging print statement
     print("Pet image path:", pet_image)  # This will print in the terminal to check the image path    
