@@ -73,19 +73,23 @@ def home(pet_id):
     update_pet_stats(pet_id)
 
     conn = sqlite3.connect("pet.db")
-    c = conn.cursor()   
+    c = conn.cursor()
     c.execute("SELECT * FROM pet WHERE pet_id=?", (pet_id,))
     pet = c.fetchone()
     conn.close()
 
-    if not pet or pet[3] not in ["brown", "white", "black", "spotted"]:
-        return redirect("/setup")
+    if not pet or len(pet) < 9:  # Ensure pet exists and has all expected values
+        return redirect("/setup")  # Redirect if pet is missing
 
-    color = pet[3]
-    hunger, energy, happiness, health = pet[5], pet[6], pet[7], pet[8]
+    color = pet[3] if pet[3] in ["brown", "white", "black", "spotted"] else "brown"
+    hunger = pet[5] if pet[5] is not None else 5
+    energy = pet[6] if pet[6] is not None else 5
+    happiness = pet[7] if pet[7] is not None else 5
+    health = pet[8] if pet[8] is not None else 5
 
+    # Assign pet image based on stats
     pet_image = f"moolapup-{color}.png"
-    if hunger > 0 and hunger <= 2:
+    if 0 < hunger <= 2:
         pet_image = f"moolapup-{color}-hungry.png"
     elif energy <= 2:
         pet_image = f"moolapup-{color}-tired.png"
@@ -93,41 +97,22 @@ def home(pet_id):
         pet_image = f"moolapup-{color}-sad.png"
     elif health <= 2:
         pet_image = f"moolapup-{color}-sick.png"
-    else:
-        pet_image = f"moolapup-{color}.png"
 
+    # Determine season and time of day
     month = dt.datetime.now().month
-    if month in [3, 4, 5]:
-        season = "spring"
-        weather_options = ["rain", "clear", "wind"]
-    elif month in [6, 7, 8]:
-        season = "summer"
-        weather_options = ["clear", "wind", "storm"]
-    elif month in [9, 10, 11]:
-        season = "fall"
-        weather_options = ["leaves", "wind", "clear"]
-    else:
-        season = "winter"
-        weather_options = ["snow", "clear", "frost"]
+    season_options = {
+        (3, 4, 5): ("spring", ["rain", "clear", "wind"]),
+        (6, 7, 8): ("summer", ["clear", "wind", "storm"]),
+        (9, 10, 11): ("fall", ["leaves", "wind", "clear"]),
+        (12, 1, 2): ("winter", ["snow", "clear", "frost"]),
+    }
+    season, weather_options = next((s for m, s in season_options.items() if month in m), ("spring", ["clear"]))
 
     current_hour = dt.datetime.now().hour
-    if 6 <= current_hour < 11:
-        time_of_day = "morning"
-    elif 11 <= current_hour < 18:
-        time_of_day = "day"
-    else:
-        time_of_day = "night"
+    time_of_day = "morning" if 6 <= current_hour < 11 else "afternoon" if 11 <= current_hour < 18 else "night"
 
-    background = f"{season}-{time_of_day}.png"
-    weather_effect = random.choice(weather_options)
+    return render_template("game.html", pet=pet, pet_image=pet_image, season=season, weather_options=weather_options, time_of_day=time_of_day)
 
-    return render_template(
-        "index.html",
-        pet=pet,
-        pet_id=pet_id,
-        pet_image=pet_image,
-        background=background,
-        weather_effect=weather_effect
     )
 
     # ✅ Debugging print statement
