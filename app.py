@@ -97,56 +97,56 @@ def home(pet_id):
         pet_image = f"moolapup-{color}-sad.png"
     elif health <= 2:
         pet_image = f"moolapup-{color}-sick.png"
-# Determine season and time of day  
-month = dt.datetime.now().month
-season_options = {
-    (3, 4, 5): ("spring", ["rain", "clear", "wind"]),
-    (6, 7, 8): ("summer", ["clear", "wind", "storm"]),
-    (9, 10, 11): ("fall", ["leaves", "wind", "clear"]),
-    (12, 1, 2): ("winter", ["snow", "clear", "frost"]),
-}
 
-# Loop to determine season and weather options
-for months, (s, w) in season_options.items():
-    if month in months:
-        season = s
-        weather_options = w
-        break
-else:
-    season = "spring"
-    weather_options = ["clear"]
+    # ✅ Determine season and time of day
+    month = dt.datetime.now().month
+    season_options = {
+        (3, 4, 5): ("spring", ["rain", "clear", "wind"]),
+        (6, 7, 8): ("summer", ["clear", "wind", "storm"]),
+        (9, 10, 11): ("fall", ["leaves", "wind", "clear"]),
+        (12, 1, 2): ("winter", ["snow", "clear", "frost"]),
+    }
 
-# Determine time of day (fix "afternoon" → "day")
-current_hour = dt.datetime.now().hour
-if 6 <= current_hour < 11:
-    time_of_day = "morning"
-elif 11 <= current_hour < 18:
-    time_of_day = "day"  # ✅ Fix: Matches "summer-day.png"
-else:
-    time_of_day = "night"
+    # Loop to determine season and weather options
+    for months, (s, w) in season_options.items():
+        if month in months:
+            season = s
+            weather_options = w
+            break
+    else:
+        season = "spring"
+        weather_options = ["clear"]
 
-# Debugging output to confirm
-print(f"DEBUG: Season - {season}, Time of Day - {time_of_day}")
-print(f"DEBUG: Weather Options - {weather_options}")
+    # ✅ Determine time of day
+    current_hour = dt.datetime.now().hour
+    if 6 <= current_hour < 11:
+        time_of_day = "morning"
+    elif 11 <= current_hour < 18:
+        time_of_day = "day"  # ✅ Fix: Matches "summer-day.png"
+    else:
+        time_of_day = "night"
 
-# Send values to template
-return render_template("index.html", pet=pet, pet_image=pet_image, 
-                       season=season, time_of_day=time_of_day, weather_options=weather_options)
+    # ✅ Define background and weather effect
+    background = f"{season}-{time_of_day}.png"
+    weather_effect = random.choice(weather_options)
 
+    # ✅ Debugging output to confirm
+    print(f"DEBUG: Season - {season}, Time of Day - {time_of_day}")
+    print(f"DEBUG: Weather Effect - {weather_effect}")
+    print(f"DEBUG: Background - {background}")
 
-   
-
-    # ✅ Debugging print statement
-    print("Pet image path:", pet_image)  # This will print in the terminal to check the image path    
-   
-    # ✅ FIX: Ensure `return` is properly aligned
+    # ✅ Ensure single return statement with all necessary variables
     return render_template(
-     "index.html",
-     pet=pet,
-     pet_image=pet_image,
-     background=background,
-     weather_effect=weather_effect
+        "index.html",
+        pet=pet,
+        pet_image=pet_image,
+        background=background,
+        weather_effect=weather_effect,
+        season=season,
+        time_of_day=time_of_day,
+        weather_options=weather_options
     )
+
 
 # ✅ Function to update pet stats every 2 hours
 def update_pet_stats(pet_id):
